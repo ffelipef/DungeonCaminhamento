@@ -134,18 +134,48 @@ class SimuladorLabirintoRPG:
                         novo_caminho = list(caminho)
                         novo_caminho.append(vizinho)
                         pilha.append(novo_caminho)
+
+    def animar_dijkstra(self):
+        inicio, fim = 0, 15
+        self.passos = 0
+        self.inicio_tempo = time.time()
+        
+        fila = [(0, inicio, [inicio])]
+        visitados = set()
+        
+        print("Dijkstra iniciado...")
+
+        while fila:
+            custo, vertice, caminho = heapq.heappop(fila)
+
+            if vertice not in visitados:
+                visitados.add(vertice)
+                self.passos += 1
+                self.desenhar_frame(visitados, vertice, titulo=f"DIJKSTRA (Custo {custo})")
+
+                if vertice == fim:
+                    self.desenhar_frame(visitados, vertice, caminho_final=caminho, titulo=f"DIJKSTRA VENCEU (Custo {custo})")
+                    plt.show()
+                    return
+
+                for vizinho in self.grafo.neighbors(vertice):
+                    if vizinho not in visitados:
+                        peso = self.grafo[vertice][vizinho]['weight']
+                        heapq.heappush(fila, (custo + peso, vizinho, caminho + [vizinho]))
 # --- MENU ---
 def main():
     sim = SimuladorLabirintoRPG()
     while True:
         print("1 - BFS (Largura)")
         print("2 - DFS (Profundidade)")
+        print("3 - Dijkstra (Custo Mínimo)")
         print("0 - Sair")
         op = input("Opção: ")
         
         plt.ion()
         if op == '1': sim.animar_bfs()
         elif op == '2': sim.animar_dfs()
+        elif op == '3': sim.animar_dijkstra()
         elif op == '0': break
         else: print("Opção não implementada nesta versão.")
         plt.ioff()
