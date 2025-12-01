@@ -1,4 +1,4 @@
-# Simulador de Logística Temporal com Grafos (Graph Theory)
+# Simulador de Logística Temporal com Grafos (Teoria de Grafos)
 
 Este projeto implementa e compara algoritmos de caminhamento em grafos (BFS, DFS, Dijkstra e Bellman-Ford) aplicados a um cenário fictício de "Logística Temporal", onde arestas de peso negativo representam ganho de recursos.
 
