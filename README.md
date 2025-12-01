@@ -2,7 +2,7 @@
 
 Este projeto implementa e compara algoritmos de caminhamento em grafos (BFS, DFS, Dijkstra e Bellman-Ford) aplicados a um cenário fictício de "Logística Temporal", onde arestas de peso negativo representam ganho de recursos.
 
-Desenvolvido como requisito avaliativo da disciplina de [Nome da Matéria].
+Desenvolvido como requisito avaliativo da disciplina de Teoria de Grafos.
 
 ## 📋 Funcionalidades
 - **Visualização Gráfica:** Renderização do grafo utilizando `networkx` e `matplotlib`.
