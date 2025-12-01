@@ -162,6 +162,50 @@ class SimuladorLabirintoRPG:
                     if vizinho not in visitados:
                         peso = self.grafo[vertice][vizinho]['weight']
                         heapq.heappush(fila, (custo + peso, vizinho, caminho + [vizinho]))
+
+    def animar_bellman_ford(self):
+        inicio, fim = 0, 15
+        self.passos = 0
+        self.inicio_tempo = time.time()
+        
+        dist = {n: float('inf') for n in self.grafo.nodes}
+        predecessor = {n: None for n in self.grafo.nodes}
+        dist[inicio] = 0
+        
+        caminho_animacao = set()
+        caminho_animacao.add(inicio)
+        
+        print("Relaxando arestas...")
+        
+        # Bellman-Ford faz (V-1) iterações completas
+        for i in range(len(self.grafo.nodes) - 1):
+            mudou = False
+            for u, v, dados in self.grafo.edges(data=True):
+                self.passos += 1 # Cada aresta verificada é um passo computacional
+                if dist[u] + dados['weight'] < dist[v]:
+                    dist[v] = dist[u] + dados['weight']
+                    predecessor[v] = u
+                    mudou = True
+                    caminho_animacao.add(v)
+            
+            # Mostra a atualização a cada loop completo para não demorar séculos
+            self.desenhar_frame(caminho_animacao, titulo=f"BELLMAN-FORD (Iteração {i+1})")
+            
+            if not mudou:
+                break
+        
+        # Reconstrói Caminho
+        caminho = []
+        curr = fim
+        if dist[fim] != float('inf'):
+            while curr is not None:
+                caminho.insert(0, curr)
+                curr = predecessor[curr]
+            
+            self.desenhar_frame(set(self.grafo.nodes), fim, caminho_final=caminho, titulo=f"BELLMAN-FORD OTIMIZADO (Custo {dist[fim]})")
+            plt.show()
+        else:
+            print("Caminho não encontrado")
 # --- MENU ---
 def main():
     sim = SimuladorLabirintoRPG()
@@ -169,6 +213,7 @@ def main():
         print("1 - BFS (Largura)")
         print("2 - DFS (Profundidade)")
         print("3 - Dijkstra (Custo Mínimo)")
+        print("4 - Bellman-Ford (Custo Mínimo)")
         print("0 - Sair")
         op = input("Opção: ")
         
@@ -176,6 +221,7 @@ def main():
         if op == '1': sim.animar_bfs()
         elif op == '2': sim.animar_dfs()
         elif op == '3': sim.animar_dijkstra()
+        elif op == '4': sim.animar_bellman_ford()
         elif op == '0': break
         else: print("Opção não implementada nesta versão.")
         plt.ioff()
