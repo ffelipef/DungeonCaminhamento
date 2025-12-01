@@ -105,16 +105,47 @@ class SimuladorLabirintoRPG:
                     novo_caminho.append(vizinho)
                     fila.append(novo_caminho)
 
+
+    def animar_dfs(self):
+        inicio, fim = 0, 15
+        self.passos = 0
+        self.inicio_tempo = time.time()
+        
+        pilha = [[inicio]]
+        visitados = set()
+        
+        while pilha:
+            caminho = pilha.pop()
+            vertice = caminho[-1]
+
+            if vertice not in visitados:
+                visitados.add(vertice)
+                self.passos += 1
+                self.desenhar_frame(visitados, vertice, titulo="DFS - Exploração Profunda")
+
+                if vertice == fim:
+                    self.desenhar_frame(visitados, vertice, caminho_final=caminho, titulo="DFS FINALIZADO")
+                    plt.show()
+                    return
+
+                vizinhos = list(self.grafo.neighbors(vertice))
+                for vizinho in reversed(vizinhos): 
+                    if vizinho not in visitados:
+                        novo_caminho = list(caminho)
+                        novo_caminho.append(vizinho)
+                        pilha.append(novo_caminho)
 # --- MENU ---
 def main():
     sim = SimuladorLabirintoRPG()
     while True:
         print("1 - BFS (Largura)")
+        print("2 - DFS (Profundidade)")
         print("0 - Sair")
         op = input("Opção: ")
         
         plt.ion()
         if op == '1': sim.animar_bfs()
+        elif op == '2': sim.animar_dfs()
         elif op == '0': break
         else: print("Opção não implementada nesta versão.")
         plt.ioff()
