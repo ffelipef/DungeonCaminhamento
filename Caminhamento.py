@@ -9,6 +9,7 @@ class SimuladorLabirintoRPG:
         self.grafo = nx.DiGraph()
         self.passos = 0
         self.inicio_tempo = 0
+        self.crono = 100
         
         self.nomes_salas = {
             0: "0. Portal Entrada", 1: "1. Corredor Passado", 2: "2. Sala Espelhos",
@@ -23,7 +24,7 @@ class SimuladorLabirintoRPG:
         self.arestas = [
             (0, 1, 5), (0, 4, 3), (1, 2, 2), (1, 5, 6), (2, 3, 7), (2, 6, 4),
             (3, 7, -1), (4, 5, 2), (4, 8, 8), (5, 6, 2), (5, 9, 5),
-            (6, 7, 3), (6, 10, 4), (7, 11, 2), (8, 9, 3), (8, 12, 6),
+            (6, 7, 3), (6, 10, 4), (11, 7, 2), (8, 9, 3), (8, 12, 6),
             (9, 10, 3), (9, 13, 4), (10, 11, 2), (10, 14, 1),
             (11, 15, 5), (12, 13, 2), (13, 14, -10), (14, 15, 2), (7, 10, 9), 
             (5, 10, 8), (1, 9, 7), (0, 5, 10), (5, 8, 9), (4, 7, 4), (2, 5, 3), (1,0,5), (8,5,7)
@@ -41,15 +42,27 @@ class SimuladorLabirintoRPG:
         plt.clf()
         plt.margins(0.1)
         tempo_decorrido = time.time() - self.inicio_tempo
-        
+
+        cor_texto = 'black'
+        status_crono = "NORMAL"
+        if self.crono > 100: 
+            cor_texto = 'blue'
+            status_crono = "SOBRECARGA (+)"
+        elif self.crono < 30: 
+            cor_texto = 'red'
+            status_crono = "CRÍTICO (!)"
+            
+        info = f"Passos: {self.passos} | Tempo: {tempo_decorrido:.1f}s"
+        crono_info = f"CRONOS: {self.crono}% [{status_crono}]"
+
         node_colors = []
         for n in self.grafo.nodes():
-            if n == atual: node_colors.append('#FFFF00') # Amarelo (Atual)
-            elif n in visitados_set: node_colors.append('#32CD32') # Verde (Visitado)
-            elif n == 0: node_colors.append('#00FF00') # comeco
-            elif n == 15: node_colors.append('#FF0000') # meta
-            elif n == 14: node_colors.append('#0a0a99') # bonus
-            else: node_colors.append('#ADD8E6') # Azul
+            if n == atual: node_colors.append('#FFFF00')
+            elif n in visitados_set: node_colors.append('#32CD32')
+            elif n == 0: node_colors.append('#00FF00')
+            elif n == 15: node_colors.append('#FF0000')
+            elif n == 14: node_colors.append('#FFD700')
+            else: node_colors.append('#ADD8E6')
 
         nx.draw_networkx_nodes(self.grafo, self.pos, node_color=node_colors, node_size=700)
         nx.draw_networkx_labels(self.grafo, self.pos, font_size=8, font_weight='bold')
@@ -67,12 +80,13 @@ class SimuladorLabirintoRPG:
         nx.draw_networkx_edges(self.grafo, self.pos, edge_color=edge_colors, width=width_sizes, arrowsize=20)
         edge_labels = nx.get_edge_attributes(self.grafo, 'weight')
         nx.draw_networkx_edge_labels(self.grafo, self.pos, edge_labels=edge_labels)
-        
-        stats = f"Passos: {self.passos} | Tempo: {tempo_decorrido:.1f}s"
-        if caminho_final:
-            plt.title(f"FIM: {titulo}\n{stats} | CAMINHO ENCONTRADO!", fontsize=12, color='green', fontweight='bold')
+
+        if self.crono <= 0:
+            plt.title(f"GAME OVER: CRONOS: ESGOTADA!\n{titulo}", fontsize=12, color='red', fontweight='bold')
+        elif caminho_final:
+            plt.title(f"SUCESSO: {titulo}\n{info} | {crono_info}", fontsize=10, color='green', fontweight='bold')
         else:
-            plt.title(f"{titulo}\n{stats}", fontsize=12)
+            plt.title(f"{titulo}\n{info}\n{crono_info}", fontsize=10, color=cor_texto, fontweight='bold')
             
         plt.draw()
         plt.pause(0.4)
@@ -106,7 +120,6 @@ class SimuladorLabirintoRPG:
                     novo_caminho.append(vizinho)
                     fila.append(novo_caminho)
 
-
     def animar_dfs(self):
         inicio, fim = 0, 15
         self.passos = 0
@@ -139,18 +152,28 @@ class SimuladorLabirintoRPG:
     def animar_dijkstra(self):
         inicio, fim = 0, 15
         self.passos = 0
+        self.crono = 100
         self.inicio_tempo = time.time()
         
         fila = [(0, inicio, [inicio])]
         visitados = set()
+        visited_costs = {inicio: 0}
         
         print("Dijkstra iniciado...")
 
         while fila:
+            if self.crono <= 0: 
+                self.desenhar_frame(visitados, titulo="DIJKSTRA MORREU")
+                plt.show()
+                return
+
             custo, vertice, caminho = heapq.heappop(fila)
 
+            if vertice in visited_costs and visited_costs[vertice] < custo: continue
+            
             if vertice not in visitados:
                 visitados.add(vertice)
+                visited_costs[vertice] = custo
                 self.passos += 1
                 self.desenhar_frame(visitados, vertice, titulo=f"DIJKSTRA (Custo {custo})")
 
@@ -160,13 +183,17 @@ class SimuladorLabirintoRPG:
                     return
 
                 for vizinho in self.grafo.neighbors(vertice):
+                    peso = self.grafo[vertice][vizinho]['weight']
+                    self.crono -= peso 
+                    
+                    novo_custo = custo + peso
                     if vizinho not in visitados:
-                        peso = self.grafo[vertice][vizinho]['weight']
-                        heapq.heappush(fila, (custo + peso, vizinho, caminho + [vizinho]))
+                        heapq.heappush(fila, (novo_custo, vizinho, caminho + [vizinho]))
 
     def animar_bellman_ford(self):
         inicio, fim = 0, 15
         self.passos = 0
+        self.crono = 100
         self.inicio_tempo = time.time()
         
         dist = {n: float('inf') for n in self.grafo.nodes}
@@ -175,29 +202,31 @@ class SimuladorLabirintoRPG:
         
         caminho_animacao = set()
         caminho_animacao.add(inicio)
-        
-        print("Iniciando varredura Bellman-Ford...")
-        
+
         for i in range(len(self.grafo.nodes) - 1):
+            if self.crono <= 0: 
+                self.desenhar_frame(caminho_animacao, titulo="BELLMAN-FORD MORREU")
+                plt.show()
+                return
+
             mudou = False
             for u, v, dados in self.grafo.edges(data=True):
                 self.passos += 1
-                if dist[u] != float('inf') and dist[u] + dados['weight'] < dist[v]:
-                    dist[v] = dist[u] + dados['weight']
+                peso = dados['weight']
+                
+                if dist[u] != float('inf') and dist[u] + peso < dist[v]:
+                    dist[v] = dist[u] + peso
                     predecessor[v] = u
                     mudou = True
                     caminho_animacao.add(v)
+                    self.crono -= peso 
             
             self.desenhar_frame(caminho_animacao, titulo=f"BELLMAN-FORD (Iteração {i+1})")
-            if not mudou:
-                break
+            if not mudou: break
         
         for u, v, dados in self.grafo.edges(data=True):
-            if dist[u] != float('inf') and dist[u] + dados['weight'] < dist[v]:
-                print(f"ALERTA CRÍTICO: Ciclo Negativo detectado entre {u} e {v}!")
-                plt.title(f"ERRO: PARADOXO TEMPORAL DETECTADO!\nCiclo negativo de energia infinito.", fontsize=10, color='red', fontweight='bold')
-                plt.draw()
-                plt.pause(5)
+            if dist[u] + dados['weight'] < dist[v]:
+                print("Paradoxo Temporal Detectado!")
                 return
 
         caminho = []
@@ -206,9 +235,7 @@ class SimuladorLabirintoRPG:
             while curr is not None:
                 caminho.insert(0, curr)
                 curr = predecessor[curr]
-                # Segurança contra loop visual na reconstrução
-                if len(caminho) > len(self.grafo.nodes) + 2: 
-                    break 
+                if len(caminho) > 20: break
             
             self.desenhar_frame(set(self.grafo.nodes), fim, caminho_final=caminho, titulo=f"BELLMAN-FORD OTIMIZADO (Custo {dist[fim]})")
             plt.show()
