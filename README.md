@@ -13,7 +13,7 @@ Desenvolvido como requisito avaliativo da disciplina de Teoria de Grafos.
 ## 🚀 Como Executar
 
 ### Pré-requisitos
-Certifique-se de ter o Python 3.12+ instalado. (não testei com versões anteriores. Se quiser usar versões anteriores, use por conta própria.)
+Certifique-se de ter o Python 3.12+ instalado. (Não testei com versões anteriores. Se quiser usar versões anteriores, use por conta própria.)
 
 ### Instalação
 1. Clone o repositório:
