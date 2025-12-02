@@ -18,7 +18,7 @@ Certifique-se de ter o Python 3.12+ instalado. (Não testei com versões anterio
 ### Instalação
 1. Clone o repositório:
    ```bash
-   git clone [https://github.com/SEU_USUARIO/Graph-Theory-Simulator.git](https://github.com/SEU_USUARIO/Graph-Theory-Simulator.git)
+   git clone https://github.com/ffelipef/DungeonCaminhamento.git
    cd Graph-Theory-Simulator
    ```
 2. Instale as dependências
