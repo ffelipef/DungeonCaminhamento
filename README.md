@@ -19,7 +19,7 @@ Certifique-se de ter o Python 3.12+ instalado. (Não testei com versões anterio
 1. Clone o repositório:
    ```bash
    git clone https://github.com/ffelipef/DungeonCaminhamento.git
-   cd Graph-Theory-Simulator
+   cd DungeonCaminhamento
    ```
 2. Instale as dependências
    ```bash
