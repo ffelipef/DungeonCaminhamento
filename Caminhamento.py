@@ -175,32 +175,39 @@ class SimuladorLabirintoRPG:
         caminho_animacao = set()
         caminho_animacao.add(inicio)
         
-        print("Relaxando arestas...")
+        print("Iniciando varredura Bellman-Ford...")
         
-        # Bellman-Ford faz (V-1) iterações completas
         for i in range(len(self.grafo.nodes) - 1):
             mudou = False
             for u, v, dados in self.grafo.edges(data=True):
-                self.passos += 1 # Cada aresta verificada é um passo computacional
-                if dist[u] + dados['weight'] < dist[v]:
+                self.passos += 1
+                if dist[u] != float('inf') and dist[u] + dados['weight'] < dist[v]:
                     dist[v] = dist[u] + dados['weight']
                     predecessor[v] = u
                     mudou = True
                     caminho_animacao.add(v)
             
-            # Mostra a atualização a cada loop completo para não demorar séculos
             self.desenhar_frame(caminho_animacao, titulo=f"BELLMAN-FORD (Iteração {i+1})")
-            
             if not mudou:
                 break
         
-        # Reconstrói Caminho
+        for u, v, dados in self.grafo.edges(data=True):
+            if dist[u] != float('inf') and dist[u] + dados['weight'] < dist[v]:
+                print(f"ALERTA CRÍTICO: Ciclo Negativo detectado entre {u} e {v}!")
+                plt.title(f"ERRO: PARADOXO TEMPORAL DETECTADO!\nCiclo negativo de energia infinito.", fontsize=10, color='red', fontweight='bold')
+                plt.draw()
+                plt.pause(5)
+                return
+
         caminho = []
         curr = fim
         if dist[fim] != float('inf'):
             while curr is not None:
                 caminho.insert(0, curr)
                 curr = predecessor[curr]
+                # Segurança contra loop visual na reconstrução
+                if len(caminho) > len(self.grafo.nodes) + 2: 
+                    break 
             
             self.desenhar_frame(set(self.grafo.nodes), fim, caminho_final=caminho, titulo=f"BELLMAN-FORD OTIMIZADO (Custo {dist[fim]})")
             plt.show()
