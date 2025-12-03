@@ -61,7 +61,7 @@ class SimuladorLabirintoRPG:
             elif n in visitados_set: node_colors.append('#32CD32')
             elif n == 0: node_colors.append('#00FF00')
             elif n == 15: node_colors.append('#FF0000')
-            elif n == 14: node_colors.append('#FFD700')
+            elif n == 14: node_colors.append('#0a0a99')
             else: node_colors.append('#ADD8E6')
 
         nx.draw_networkx_nodes(self.grafo, self.pos, node_color=node_colors, node_size=700)
@@ -89,7 +89,7 @@ class SimuladorLabirintoRPG:
             plt.title(f"{titulo}\n{info}\n{crono_info}", fontsize=10, color=cor_texto, fontweight='bold')
             
         plt.draw()
-        plt.pause(0.4)
+        plt.pause(0.05)
 
     # --- ALGORITMOS ---
     def animar_bfs(self):
@@ -202,6 +202,8 @@ class SimuladorLabirintoRPG:
         
         caminho_animacao = set()
         caminho_animacao.add(inicio)
+        
+        print("Iniciando Bellman-Ford (Modo Detalhado)...")
 
         for i in range(len(self.grafo.nodes) - 1):
             if self.crono <= 0: 
@@ -214,16 +216,19 @@ class SimuladorLabirintoRPG:
                 self.passos += 1
                 peso = dados['weight']
                 
+                # Se encontrarmos um caminho melhor...
                 if dist[u] != float('inf') and dist[u] + peso < dist[v]:
                     dist[v] = dist[u] + peso
                     predecessor[v] = u
                     mudou = True
                     caminho_animacao.add(v)
-                    self.crono -= peso 
-            
-            self.desenhar_frame(caminho_animacao, titulo=f"BELLMAN-FORD (Iteração {i+1})")
-            if not mudou: break
-        
+                    self.crono -= peso
+                    self.desenhar_frame(caminho_animacao, atual=v, titulo=f"BELLMAN-FORD (Iteração {i+1} - Atualizando...)")
+                    time.sleep(0.1) 
+
+            if not mudou: 
+                self.desenhar_frame(caminho_animacao, titulo=f"BELLMAN-FORD (Iteração {i+1} - Sem mudanças)")
+                time.sleep(0.2)
         for u, v, dados in self.grafo.edges(data=True):
             if dist[u] + dados['weight'] < dist[v]:
                 print("Paradoxo Temporal Detectado!")
